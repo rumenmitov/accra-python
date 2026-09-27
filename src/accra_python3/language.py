@@ -6,13 +6,14 @@ from accra_language import (
     Language,
     LanguageSpec,
 )
+from uv import Uv
 
 from . import utils
 
 
 class Python3(Language):
     def __init__(self):
-        spec = LanguageSpec(name="python3", version="3")
+        spec = LanguageSpec(name="python3", version="3", supported_env_managers={Uv()})
         super().__init__(spec)
 
     @override
