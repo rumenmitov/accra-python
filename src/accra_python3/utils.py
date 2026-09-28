@@ -9,7 +9,7 @@ from packaging.version import Version
 
 @cache
 def get_supported_python_versions_from_code(config: Config) -> set[str] | AccraError:
-    min_minor_version: int = 0
+    requires_python: str = "3"
 
     result = subprocess.run(
         ["vermin", "-f", "parsable", config.cwd or Path(".")],
@@ -34,21 +34,23 @@ def get_supported_python_versions_from_code(config: Config) -> set[str] | AccraE
     if py3_version.startswith("!"):
         return set()
 
-    min_minor_version = int(py3_version.split(".")[1]) or min_minor_version
+    requires_python = py3_version or requires_python
+    requires_python = ">=" + requires_python
 
-    return get_python_minor_versions(min_minor_version)
+    return get_python_minor_versions(requires_python)
 
 
 @cache
-def get_python_minor_versions(min_minor_version: int) -> set[str]:
+def get_python_minor_versions(requires_python: str) -> set[str]:
+    MIN_MINOR_VERSION = 0
     MAX_MINOR_VERSION = 13
 
     all_versions: set[str] = {
-        f"3.{i}" for i in range(min_minor_version, MAX_MINOR_VERSION + 1)
+        f"3.{i}" for i in range(MIN_MINOR_VERSION, MAX_MINOR_VERSION + 1)
     }
 
     parsed_versions: set[str] = {
-        v for v in all_versions if SpecifierSet(">=3.0").contains(Version(v))
+        v for v in all_versions if SpecifierSet(requires_python).contains(Version(v))
     }
 
     return parsed_versions

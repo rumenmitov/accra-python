@@ -14,6 +14,7 @@ from accra_language import (
 )
 
 from . import utils
+from .pyproject_toml import Pyproject_toml
 
 
 class Uv(EnvironmentManager):
@@ -22,7 +23,7 @@ class Uv(EnvironmentManager):
             name="uv",
             version="0.12",
             default_language_version="3.14",
-            supported_manifests=set(),
+            supported_manifests={Pyproject_toml(config)},
             config=config,
         )
         super().__init__(spec)

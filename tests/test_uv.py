@@ -23,7 +23,7 @@ def test_uv():
     shutil.copytree(uv_sample_project_dir, tmp_dir)
 
     try:
-        config = Config(cwd=Path("."))
+        config = Config(cwd=tmp_dir)
         python3 = Python3(config)
 
         assert python3.detect()
