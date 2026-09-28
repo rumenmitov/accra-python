@@ -1,7 +1,8 @@
 import subprocess
 from functools import cache
+from pathlib import Path
 
-from accra_languages import AccraError, Config
+from accra_language import AccraError, Config
 from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 
@@ -11,11 +12,11 @@ def get_supported_python_versions_from_code(config: Config) -> set[str] | AccraE
     min_minor_version: int = 0
 
     result = subprocess.run(
-        ["vermin", "-f", "parsable", config.cwd],
+        ["vermin", "-f", "parsable", config.cwd or Path(".")],
         check=False,
         capture_output=True,
         text=True,
-        **config.dump_model(),
+        **config.model_dump(),
     )
 
     if result.returncode != 0:
