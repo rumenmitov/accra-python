@@ -12,8 +12,8 @@ def test_uv():
         "RUN pyenv install --skip-existing 3.14",
         "RUN curl -LsSf https://astral.sh/uv/install.sh | sh",
         "RUN uv sync",
-        "RUN uv add pydantic",
         "RUN uv add httpx",
+        "RUN uv add pydantic",
         "RUN uv add rich",
     ]
 

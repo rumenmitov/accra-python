@@ -6,11 +6,11 @@ readme = "README.txt"
 authors = [
     { name = "Rumen", email = "rumenmitov@disroot.org" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
     "accra-language",
     "pytest>=9.1.1",
-    "vermin>=1.8.0",
+    "vermin>=1.6.0",
 ]
 
 [project.scripts]
