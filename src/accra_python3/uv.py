@@ -123,6 +123,7 @@ class Uv(EnvironmentManager):
             return AccraBuildError(message="uv sync failed")
 
         dockerfile.append(DockerfileInstruction("RUN uv sync"))
+        return dockerfile
 
     @override
     def _install_dependency(self, dependency: DependencySpec) -> AccraResult:

@@ -12,6 +12,9 @@ def test_uv():
         "RUN pyenv install --skip-existing 3.14",
         "RUN curl -LsSf https://astral.sh/uv/install.sh | sh",
         "RUN uv sync",
+        "RUN uv add pydantic",
+        "RUN uv add httpx",
+        "RUN uv add rich",
     ]
 
     uv_sample_project_dir = Path(__file__).resolve().parent / Path(
@@ -29,6 +32,7 @@ def test_uv():
         assert python3.detect()
 
         result: AccraResult = python3.build()
+        assert result
 
         match result:
             case list():
