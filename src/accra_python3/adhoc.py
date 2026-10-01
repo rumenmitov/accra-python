@@ -1,10 +1,54 @@
+import ast
+import os
 import subprocess
+import sys
+from collections.abc import Mapping
+from importlib.metadata import packages_distributions
 from pathlib import Path
 from typing import override
 
 from accra_language import AccraError, Config, DependencySpec, Manifest, ManifestSpec
 
 from . import utils
+
+_ADHOC_PACKAGES: Mapping[str, str] = {
+    "google.auth": "google-auth",
+    "google.api_core": "google-api-core",
+    "google.cloud.storage": "google-cloud-storage",
+    "googleapiclient": "google-api-python-client",
+    "pydantic_settings": "pydantic-settings",
+    "yaml": "PyYAML",
+    "PIL": "Pillow",
+    "cv2": "opencv-python",
+    "sklearn": "scikit-learn",
+    "bs4": "beautifulsoup4",
+    "dotenv": "python-dotenv",
+    "dateutil": "python-dateutil",
+    "jwt": "PyJWT",
+    "attr": "attrs",
+    "markdown_it": "markdown-it-py",
+}
+
+# Directories we never want to walk into when harvesting import-time
+# dependencies — they belong to dev/test/build tooling rather than the
+# package's runtime and would pull in noisy extras (pytest plugins etc).
+_EXCLUDED_SUBDIRS: set[str] = {
+    "__pycache__",
+    ".git",
+    ".venv",
+    "venv",
+    "env",
+    "build",
+    "dist",
+    "tests",
+    "test",
+    "docs",
+    "doc",
+    "examples",
+    "example",
+    "benchmarks",
+    "benchmark",
+}
 
 
 class Adhoc(Manifest):
@@ -16,10 +60,82 @@ class Adhoc(Manifest):
     def detect(self) -> bool:
         return True
 
+    def _get_imported_modules(code: str) -> set[str]:
+        """Return full dotted module names imported by the code (absolute imports only)."""
+        modules: set[str] = set()
+
+        for node in ast.walk(ast.parse(code)):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    modules.add(alias.name)
+            elif (
+                isinstance(node, ast.ImportFrom) and node.level == 0 and node.module
+            ):  # skip relative imports
+                modules.add(node.module)
+
+        return modules
+
+    def _resolve_package(
+        module: str, installed: Mapping[str, list[str]] | None = None
+    ) -> str | None:
+        """Map a dotted import name to an installable package name."""
+        top = module.split(".")[0]
+
+        if top in sys.stdlib_module_names:  # py3.10+
+            return None
+
+        # 1. explicit overrides, most specific match first
+        parts = module.split(".")
+        for i in range(len(parts), 0, -1):
+            key = ".".join(parts[:i])
+            if key in _ADHOC_PACKAGES:
+                return _ADHOC_PACKAGES[key]
+
+        # 2. look it up from what's installed in the environment
+        installed = installed if installed is not None else packages_distributions()
+        if top in installed:
+            return installed[top][0]
+
+        # 3. fall back to the import name itself
+        return top
+
+    def _get_canonical_packages_from_code(code: str) -> set[str]:
+        """Returns a set of canonical package names extracted from `code`."""
+        installed: Mapping[str, list[str]] = packages_distributions()
+        packages: set[str] = {
+            Adhoc._resolve_package(pkg, installed)
+            for pkg in Adhoc._get_imported_modules(code)
+        }
+
+        return packages
+
     @override
     def extract_dependencies(self) -> set[DependencySpec] | None:
-        # TODO
-        return None
+        dependencies: set[DependencySpec] = set()
+
+        for root, dirs, files in os.walk(self.spec.config.cwd):
+            dirs[:] = [d for d in dirs if d.lower() not in _EXCLUDED_SUBDIRS]
+
+            for file in files:
+                if file.endswith(".py"):
+                    file_path: Path = Path(root) / Path(file)
+                    try:
+                        with open(
+                            file_path, "r", encoding="utf-8", errors="ignore"
+                        ) as f:
+                            code: str = f.read()
+                            pkgs: set[str] = Adhoc._get_canonical_packages_from_code(
+                                code
+                            )
+
+                            dependencies.update(
+                                {DependencySpec(name=pkg, version="") for pkg in pkgs}
+                            )
+
+                    except Exception:  # noqa: BLE001, S110
+                        pass
+
+        return dependencies
 
     @override
     def get_supported_language_versions(self) -> set[str] | AccraError:

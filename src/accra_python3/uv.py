@@ -28,6 +28,14 @@ class Uv(EnvironmentManager):
         )
         super().__init__(spec)
 
+        self.is_pyproject_present: bool = bool(
+            [
+                manifest
+                for manifest in self.present_manifests
+                if isinstance(manifest, Pyproject_toml)
+            ]
+        )
+
     def _install_uv(self) -> AccraError | None:
         curl_result = subprocess.run(
             ["curl", "-LsSf", "https://astral.sh/uv/install.sh"],
@@ -57,6 +65,34 @@ class Uv(EnvironmentManager):
             )
 
         return None
+
+    def _uv_pyproject_setup(self) -> AccraResult:
+        uv_sync_result = subprocess.run(
+            ["uv", "sync"],
+            check=False,
+            capture_output=True,
+            text=True,
+            **self.spec.config.model_dump(),
+        )
+
+        if uv_sync_result.returncode != 0:
+            return AccraBuildError(message="uv sync failed")
+
+        return [DockerfileInstruction("RUN uv sync")]
+
+    def _uv_non_pyproject_setup(self) -> AccraResult:
+        uv_venv_result = subprocess.run(
+            ["uv", "venv"],
+            check=False,
+            capture_output=True,
+            text=True,
+            **self.spec.config.model_dump(),
+        )
+
+        if uv_venv_result.returncode != 0:
+            return AccraBuildError(message="uv venv failed")
+
+        return [DockerfileInstruction("RUN uv venv")]
 
     @override
     def setup(self) -> AccraResult:
@@ -105,23 +141,19 @@ class Uv(EnvironmentManager):
         )
 
         # setup uv
-        uv_sync_result = subprocess.run(
-            ["uv", "sync"],
-            check=False,
-            capture_output=True,
-            text=True,
-            **self.spec.config.model_dump(),
+        setup_result: AccraResult = (
+            self._uv_pyproject_setup()
+            if self.is_pyproject_present
+            else self._uv_non_pyproject_setup()
         )
+        if isinstance(setup_result, AccraError):
+            return setup_result
 
-        if uv_sync_result.returncode != 0:
-            return AccraBuildError(message="uv sync failed")
+        dockerfile.extend(setup_result)
 
-        dockerfile.append(DockerfileInstruction("RUN uv sync"))
         return dockerfile
 
-    @override
-    def _install_dependency(self, dependency: DependencySpec) -> AccraResult:
-
+    def _install_pyproject_dependency(self, dependency: DependencySpec) -> AccraResult:
         install_result = subprocess.run(
             ["uv", "add", dependency.name + dependency.version],
             check=False,
@@ -132,9 +164,41 @@ class Uv(EnvironmentManager):
 
         if install_result.returncode != 0:
             return AccraInstallError(
-                message=f"{self.name} could not install dependency: {dependency.name + dependency.version}"
+                message=f"{self.spec.name} could not install dependency: {dependency.name + dependency.version}"
             )
 
         return [
-            DockerfileInstruction(f"RUN uv add {dependency.name + dependency.version}"),
+            DockerfileInstruction(f"RUN uv add {dependency.name + dependency.version}")
         ]
+
+    def _install_non_pyproject_dependency(
+        self, dependency: DependencySpec
+    ) -> AccraResult:
+        install_result = subprocess.run(
+            ["uv", "pip", "install", dependency.name + dependency.version],
+            check=False,
+            capture_output=True,
+            text=True,
+            **self.spec.config.model_dump(),
+        )
+
+        if install_result.returncode != 0:
+            return AccraInstallError(
+                message=f"{self.spec.name} could not install dependency: {dependency.name + dependency.version}"
+            )
+
+        return [
+            DockerfileInstruction(
+                f"RUN uv pip install {dependency.name + dependency.version}"
+            )
+        ]
+
+    @override
+    def _install_dependency(self, dependency: DependencySpec) -> AccraResult:
+        result: AccraResult = (
+            self._install_pyproject_dependency(dependency)
+            if self.is_pyproject_present
+            else self._install_non_pyproject_dependency(dependency)
+        )
+
+        return result
