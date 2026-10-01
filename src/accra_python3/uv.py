@@ -13,7 +13,7 @@ from accra_language import (
     EnvironmentManagerSpec,
 )
 
-from . import utils
+from .adhoc import Adhoc
 from .pyproject_toml import Pyproject_toml
 
 
@@ -23,16 +23,10 @@ class Uv(EnvironmentManager):
             name="uv",
             version="0.12",
             default_language_version="3.14",
-            supported_manifests={Pyproject_toml(config)},
+            supported_manifests={Adhoc(config), Pyproject_toml(config)},
             config=config,
         )
         super().__init__(spec)
-
-    @override
-    def _get_supported_language_versions_from_code(
-        self,
-    ) -> set[str] | AccraError | None:
-        return utils.get_supported_python_versions_from_code(self.spec.config)
 
     def _install_uv(self) -> AccraError | None:
         curl_result = subprocess.run(
