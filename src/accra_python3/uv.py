@@ -15,15 +15,19 @@ from accra_language import (
 
 from .adhoc import Adhoc
 from .pyproject_toml import Pyproject_toml
+from .requirements_txt import Requirements_txt
 
 
 class Uv(EnvironmentManager):
     def __init__(self, config: Config):
         spec = EnvironmentManagerSpec(
             name="uv",
-            version="0.12",
-            default_language_version="3.14",
-            supported_manifests={Adhoc(config), Pyproject_toml(config)},
+            version="0.11",
+            supported_manifests={
+                Adhoc(config),
+                Pyproject_toml(config),
+                Requirements_txt(config),
+            },
             config=config,
         )
         super().__init__(spec)

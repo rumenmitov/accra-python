@@ -5,7 +5,7 @@ from packaging.version import Version
 
 
 @cache
-def get_python_minor_versions(requires_python: str) -> set[str]:
+def get_python_minor_versions(requires_python: str = ">=0") -> set[str]:
     # NOTE pyenv cannot install minor version < 5 on Debian
     MIN_MINOR_VERSION = 5
     MAX_MINOR_VERSION = 14
