@@ -1,5 +1,5 @@
 [project]
-name = "accra-python3"
+name = "accra-python"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.txt"
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-accra-python3 = "accra_python3:main"
+accra-python = "accra_python:main"
 
 [build-system]
 requires = ["uv_build>=0.12.17,<0.13.0"]

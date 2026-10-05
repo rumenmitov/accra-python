@@ -3,7 +3,7 @@ from pathlib import Path
 
 from accra_language import AccraError, Config, DependencySpec
 
-from accra_python3 import Setup_py
+from accra_python import Setup_py
 
 
 def test_setuppy():

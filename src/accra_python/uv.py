@@ -121,7 +121,7 @@ class Uv(EnvironmentManager):
 
         if pyenv_result.returncode != 0:
             return AccraInstallError(
-                message=f"pyenv could not install python3 version: {language_version}"
+                message=f"pyenv could not install python version: {language_version}"
             )
 
         dockerfile.append(

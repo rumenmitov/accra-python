@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from accra_language import AccraError, AccraResult, Config, DockerfileInstruction
 
-from accra_python3 import Python3
+from accra_python import Python3
 
 
 def test_uv():

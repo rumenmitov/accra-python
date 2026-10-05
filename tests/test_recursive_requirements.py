@@ -3,7 +3,7 @@ from pathlib import Path
 
 from accra_language import AccraError, Config, DependencySpec
 
-from accra_python3 import Requirements_txt
+from accra_python import Requirements_txt
 
 
 def test_recursive_requirements():
