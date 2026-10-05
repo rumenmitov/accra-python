@@ -16,6 +16,8 @@ from accra_language import (
 from .adhoc import Adhoc
 from .pyproject_toml import Pyproject_toml
 from .requirements_txt import Requirements_txt
+from .setup_cfg import Setup_cfg
+from .setup_py import Setup_py
 
 
 class Uv(EnvironmentManager):
@@ -27,6 +29,8 @@ class Uv(EnvironmentManager):
                 Adhoc(config),
                 Pyproject_toml(config),
                 Requirements_txt(config),
+                Setup_cfg(config),
+                Setup_py(config),
             },
             config=config,
         )
