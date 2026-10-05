@@ -26,7 +26,7 @@ class Requirements_txt(Manifest):
         """
         dependencies: set[DependencySpec] = set()
 
-        if not os.path.exists(req_file_path) or req_file_path in visited_files:
+        if not Path.exists(req_file_path) or req_file_path in visited_files:
             return
 
         visited_files.add(req_file_path)

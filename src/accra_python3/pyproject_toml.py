@@ -105,7 +105,4 @@ class Pyproject_toml(Manifest):
     @override
     def get_supported_language_versions(self) -> set[str] | AccraError:
         requires_python = self.project_section.get("requires-python")
-        if not requires_python:
-            return set()
-
-        return utils.get_python_minor_versions(requires_python)
+        return utils.get_python_minor_versions(requires_python or "")
