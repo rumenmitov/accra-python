@@ -9,7 +9,7 @@ from accra_python3 import Python3
 
 def test_uv():
     correct_dockerfile: list[DockerfileInstruction] = [
-        "RUN pyenv install --skip-existing 3.14",
+        "FROM python:3.14",
         "RUN curl -LsSf https://astral.sh/uv/install.sh | sh",
         "RUN uv sync",
         "RUN uv add httpx",

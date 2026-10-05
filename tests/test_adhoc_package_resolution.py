@@ -9,7 +9,7 @@ from accra_python3 import Python3
 
 def test_adhoc_package_resolution():
     correct_dockerfile: list[DockerfileInstruction] = [
-        "RUN pyenv install --skip-existing 3.10",
+        "FROM python:3.10",
         "RUN curl -LsSf https://astral.sh/uv/install.sh | sh",
         "RUN uv venv",
         "RUN uv pip install PyYAML",

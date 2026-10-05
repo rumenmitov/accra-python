@@ -125,9 +125,7 @@ class Uv(EnvironmentManager):
             )
 
         dockerfile.append(
-            DockerfileInstruction(
-                f"RUN pyenv install --skip-existing {language_version}"
-            ),
+            DockerfileInstruction(f"FROM python:{language_version}"),
         )
 
         # install uv (if not already installed)
