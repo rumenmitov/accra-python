@@ -71,7 +71,7 @@ class Uv(EnvironmentManager):
 
     def _uv_non_pyproject_setup(self) -> AccraResult:
         uv_venv_result = subprocess.run(
-            ["uv", "venv"],
+            ["uv", "venv", "--python", self.selected_language_version, "--seed"],
             check=False,
             capture_output=True,
             text=True,
