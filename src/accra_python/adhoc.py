@@ -153,7 +153,10 @@ class Adhoc(Manifest):
             check=False,
             capture_output=True,
             text=True,
-            **self.spec.config.model_dump(),
+            cwd=self.spec.config.cwd,
+            env=self.spec.config.env,
+            shell=self.spec.config.shell,
+            timeout=self.spec.config.timeout,
         )
 
         if result.returncode != 0:
