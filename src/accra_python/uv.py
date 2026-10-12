@@ -44,36 +44,6 @@ class Uv(EnvironmentManager):
             ]
         )
 
-    def _install_uv(self) -> AccraError | None:
-        curl_result = subprocess.run(
-            ["curl", "-LsSf", "https://astral.sh/uv/install.sh"],
-            check=False,
-            capture_output=True,
-            text=True,
-            **self.spec.config.model_dump(),
-        )
-
-        if curl_result.returncode != 0:
-            return AccraInstallError(
-                message=f"could not install environment manager: {self.spec.name}-{self.spec.version}"
-            )
-
-        shell_result = subprocess.run(
-            ["sh"],
-            stdin=curl_result.stdout,
-            check=False,
-            capture_output=True,
-            text=True,
-            **self.spec.config.model_dump(),
-        )
-
-        if shell_result.returncode != 0:
-            return AccraInstallError(
-                message=f"could not install environment manager: {self.spec.name}-{self.spec.version}"
-            )
-
-        return None
-
     def _uv_pyproject_setup(self) -> AccraResult:
         uv_sync_result = subprocess.run(
             ["uv", "sync"],
@@ -132,26 +102,13 @@ class Uv(EnvironmentManager):
                 ]
             )
 
-        result.dockerfile.append(
-            DockerfileInstruction(f"FROM python:{language_version}"),
-        )
-
-        # install uv (if not already installed)
-        uv_version_result = subprocess.run(
-            ["uv", "--version"],
-            check=False,
-            capture_output=True,
-            text=True,
-            **self.spec.config.model_dump(),
-        )
-
-        if uv_version_result.returncode != 0:
-            uv_install_error: AccraError | None = self._install_uv()
-            if uv_install_error:
-                return AccraResult(errors=[uv_install_error], success=False)
-
-        result.dockerfile.append(
-            DockerfileInstruction("RUN curl -LsSf https://astral.sh/uv/install.sh | sh")
+        result.dockerfile.extend(
+            [
+                DockerfileInstruction(f"FROM python:{language_version}"),
+                DockerfileInstruction(
+                    "RUN curl -LsSf https://astral.sh/uv/install.sh | sh"
+                ),
+            ]
         )
 
         # setup uv

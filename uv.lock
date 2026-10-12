@@ -16,24 +16,26 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "accra-language" },
-    { name = "pytest" },
     { name = "vermin" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "pytest" },
     { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "accra-language", git = "https://github.com/rumenmitov/accra-language" },
-    { name = "pytest", specifier = ">=9.1.1" },
     { name = "vermin", specifier = ">=1.6.0" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.16.9" }]
+dev = [
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "ruff", specifier = ">=0.16.9" },
+]
 
 [[package]]
 name = "annotated-types"

@@ -142,7 +142,14 @@ class Adhoc(Manifest):
         requires_python: str = "3"
 
         result = subprocess.run(
-            ["vermin", "-f", "parsable", self.spec.config.cwd or Path(".")],
+            [
+                "uv",
+                "run",
+                "vermin",
+                "-f",
+                "parsable",
+                self.spec.config.cwd or Path("."),
+            ],
             check=False,
             capture_output=True,
             text=True,
