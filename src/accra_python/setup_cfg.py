@@ -61,4 +61,4 @@ class Setup_cfg(Manifest):
 
     @override
     def get_supported_language_versions(self) -> set[str] | AccraError:
-        return utils.get_python_minor_versions(self.requires_python or "")
+        return utils.get_python_minor_versions(self.python_requires or "")
