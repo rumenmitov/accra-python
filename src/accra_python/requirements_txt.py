@@ -16,7 +16,11 @@ class Requirements_txt(Manifest):
     @override
     def detect(self) -> bool:
         requirements_txt_path: Path = self.spec.config.cwd / Path(self.spec.name)
-        return Path.exists(requirements_txt_path)
+
+        try:
+            return Path.exists(requirements_txt_path)
+        except Exception:  # noqa: BLE001
+            return False
 
     def _parse_requirements(
         req_file_path: Path, visited_files: set[Path]

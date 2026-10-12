@@ -20,10 +20,10 @@ class Setup_cfg(Manifest):
     def detect(self) -> bool:
         setupcfg_path: Path = self.spec.config.cwd / Path(self.spec.name)
 
-        if not Path.exists(setupcfg_path):
-            return False
-
         try:
+            if not Path.exists(setupcfg_path):
+                return False
+
             parser = configparser.ConfigParser()
             parser.read(setupcfg_path)
 
