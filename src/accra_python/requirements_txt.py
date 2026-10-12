@@ -30,8 +30,11 @@ class Requirements_txt(Manifest):
         """
         dependencies: set[Dependency] = set()
 
-        if not Path.exists(req_file_path) or req_file_path in visited_files:
-            return
+        try:
+            if not Path.exists(req_file_path) or req_file_path in visited_files:
+                return dependencies
+        except Exception:  # noqa: BLE001
+            return dependencies
 
         visited_files.add(req_file_path)
 
